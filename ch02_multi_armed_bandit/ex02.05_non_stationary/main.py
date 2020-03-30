@@ -78,9 +78,12 @@ class SampleAveragePlayer:
 
 
 def main():
-    testbed = KArmedBandit(10)
+    num_arms = 10
+    num_steps = 1000
+
+    testbed = KArmedBandit(num_arms)
     player = SampleAveragePlayer(testbed, 0.1)
-    player.play(1000)
+    player.play(num_steps)
     player.show()
 
 
