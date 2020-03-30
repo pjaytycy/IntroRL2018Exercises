@@ -36,6 +36,48 @@ class ConsolePlayer:
 
 
 
+class RandomPlayer:
+    def __init__(self, name):
+        self.name = name
+
+
+    def start(self, player_num):
+        self.player_num = player_num
+
+
+    def get_move(self, grid):
+        all_moves = self.get_all_possible_moves(grid)
+        selected_move = self.select_random_move(all_moves)
+        return selected_move
+
+
+    def get_all_possible_moves(self, grid):
+        all_moves = []
+        for row in range(3):
+            for col in range(3):
+                if grid[row, col] == 0:
+                    all_moves.append((row, col))
+        return all_moves
+
+
+    def select_random_move(self, all_moves):
+        i = random.randint(0, len(all_moves) - 1)
+        return all_moves[i]
+
+
+    def won(self):
+        print("{} WON!".format(self.name))
+
+
+    def lost(self):
+        print("{} LOST!".format(self.name))
+
+
+    def draw(self):
+        print("{} -> draw".format(self.name))
+
+
+
 class RLPlayer:
     def __init__(self, name, explore_pct):
         self.name = name
@@ -295,8 +337,8 @@ def main_console():
 
 
 def main_rl():
-    player1 = RLPlayer("player_greedy", explore_pct = 0.10)
-    player2 = RLPlayer("player_exporer", explore_pct = 0.25)
+    player1 = RLPlayer("RL_player", explore_pct = 0.10)
+    player2 = RandomPlayer("random")
     player1.debug = False
     player2.debug = False
     for g in range(10000):
