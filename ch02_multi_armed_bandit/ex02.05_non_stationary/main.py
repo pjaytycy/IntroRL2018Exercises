@@ -3,6 +3,7 @@
 import numpy
 import random
 from matplotlib import pyplot
+import matplotlib.ticker as mtick
 
 
 
@@ -10,6 +11,7 @@ class KArmedBandit:
     def __init__(self, K):
         self.K = K
         self._q = numpy.random.normal(0.0, 1.0, K)
+        self._optimal_k = self._q.argmax()
 
 
     def play(self, k):
@@ -27,6 +29,7 @@ class SampleAveragePlayer:
         self.score = 0
         self.Q_hist = [[] for i in range(self.K)]
         self.avg_score_hist = []
+        self.optimal_choice = []
 
 
     def play(self, num):
@@ -38,6 +41,7 @@ class SampleAveragePlayer:
             avg_score = self.score / (t + 1)
             print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], avg_score))
             self.avg_score_hist.append(avg_score)
+            self.optimal_choice.append((k == self.testbed._optimal_k) * 1.0)
 
 
     def select_action(self):
@@ -85,15 +89,24 @@ def main():
     num_steps = 1000
 
     avg_scores = numpy.zeros(num_steps)
+    avg_optimal = numpy.zeros(num_steps)
     for b in range(num_runs):
         testbed = KArmedBandit(num_arms)
         player = SampleAveragePlayer(testbed, 0.1)
         player.play(num_steps)
         avg_scores += numpy.asarray(player.avg_score_hist)
-    avg_scores /= num_runs
+        avg_optimal += numpy.asarray(player.optimal_choice)
     player.show()
-    pyplot.figure()
+
+    avg_scores /= num_runs
+    avg_optimal /= num_runs
+    ax1 = pyplot.subplot(2, 1, 1)
+    pyplot.title("average reward")
     pyplot.plot(avg_scores)
+    ax2 = pyplot.subplot(2, 1, 2)
+    pyplot.title("% optimal action")
+    pyplot.plot(avg_optimal)
+    ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     pyplot.show()
 
 
