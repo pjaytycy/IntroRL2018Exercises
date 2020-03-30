@@ -1,0 +1,70 @@
+import numpy
+import random
+
+
+
+class KArmedBandit:
+    def __init__(self, K):
+        self.K = K
+        self._q = numpy.random.normal(0.0, 1.0, 10)
+
+
+    def play(self, k):
+        return numpy.random.normal(self._q[k], 1.0)
+
+
+
+class SampleAveragePlayer:
+    def __init__(self, testbed, explore_pct):
+        self.testbed = testbed
+        self.explore_pct = explore_pct
+        self.Q = numpy.zeros(testbed.K)
+        self.N = numpy.zeros(testbed.K)
+        self.score = 0
+
+
+    def play(self, num):
+        for t in range(num):
+            k = self.select_action()
+            r = self.testbed.play(k)
+            self.update(k, r)
+            self.score += r
+            print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], self.score / (t + 1)))
+
+
+    def select_action(self):
+        possible_actions = list(range(self.testbed.K))
+        if self.should_move_greedy():
+            possible_actions = self.get_best_actions()
+        return self.select_random_action(possible_actions)
+
+
+    def should_move_greedy(self):
+        randval = random.random()
+        return (randval > self.explore_pct)
+
+
+    def get_best_actions(self):
+        maxval = numpy.max(self.Q)
+        return list(numpy.argwhere(self.Q == maxval).flatten())
+
+
+    def select_random_action(self, possible_actions):
+        i = random.randint(0, len(possible_actions) - 1)
+        return possible_actions[i]
+
+
+    def update(self, k, r):
+        self.N[k] += 1
+        self.Q[k] += 1.0/self.N[k] * (r - self.Q[k])
+
+
+def main():
+    testbed = KArmedBandit(10)
+    player = SampleAveragePlayer(testbed, 0.1)
+    player.play(1000)
+
+
+
+if __name__ == "__main__":
+    main()
