@@ -79,12 +79,20 @@ class SampleAveragePlayer:
 
 def main():
     num_arms = 10
+    num_runs = 2000
     num_steps = 1000
 
-    testbed = KArmedBandit(num_arms)
-    player = SampleAveragePlayer(testbed, 0.1)
-    player.play(num_steps)
+    avg_scores = numpy.zeros(num_steps)
+    for b in range(num_runs):
+        testbed = KArmedBandit(num_arms)
+        player = SampleAveragePlayer(testbed, 0.1)
+        player.play(num_steps)
+        avg_scores += numpy.asarray(player.avg_score_hist)
+    avg_scores /= num_runs
     player.show()
+    pyplot.figure()
+    pyplot.plot(avg_scores)
+    pyplot.show()
 
 
 
