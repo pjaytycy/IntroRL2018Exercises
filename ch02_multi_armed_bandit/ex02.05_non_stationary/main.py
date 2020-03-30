@@ -24,6 +24,7 @@ class SampleAveragePlayer:
         self.N = numpy.zeros(self.K)
         self.score = 0
         self.Q_hist = [[] for i in range(self.K)]
+        self.avg_score_hist = []
 
 
     def play(self, num):
@@ -32,7 +33,9 @@ class SampleAveragePlayer:
             r = self.testbed.play(k)
             self.update(k, r)
             self.score += r
-            print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], self.score / (t + 1)))
+            avg_score = self.score / (t + 1)
+            print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], avg_score))
+            self.avg_score_hist.append(avg_score)
 
 
     def select_action(self):
@@ -69,6 +72,7 @@ class SampleAveragePlayer:
         for k in range(self.K):
             self.Q_hist[k].append(self.testbed._q[k])
             pyplot.plot(self.Q_hist[k], marker='o', markevery=[len(self.Q_hist[k])-1])
+        pyplot.plot(self.avg_score_hist)
         pyplot.show()
 
 
