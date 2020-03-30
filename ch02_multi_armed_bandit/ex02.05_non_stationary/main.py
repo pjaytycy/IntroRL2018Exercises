@@ -33,13 +33,12 @@ class KArmedBandit:
 
 
 
-class SampleAveragePlayer:
+class Player:
     def __init__(self, testbed, explore_pct):
         self.testbed = testbed
         self.K = testbed.K
         self.explore_pct = explore_pct
         self.Q = numpy.zeros(self.K)
-        self.N = numpy.zeros(self.K)
         self.score = 0
         self.Q_hist = [[] for i in range(self.K)]
         self.avg_score_hist = []
@@ -89,8 +88,7 @@ class SampleAveragePlayer:
 
 
     def update_action_value(self, k, r):
-        self.N[k] += 1
-        self.Q[k] += 1.0/self.N[k] * (r - self.Q[k])
+        raise Exception("update_action_value() not implemented in base player")
 
 
     def show(self):
@@ -100,6 +98,18 @@ class SampleAveragePlayer:
             pyplot.plot(self.Q_hist[k], marker='o', markevery=[len(self.Q_hist[k])-1])
         pyplot.plot(self.avg_score_hist)
         pyplot.show()
+
+
+
+class SampleAveragePlayer(Player):
+    def __init__(self, testbed, explore_pct):
+        super().__init__(testbed, explore_pct)
+        self.N = numpy.zeros(self.K)
+
+
+    def update_action_value(self, k, r):
+        self.N[k] += 1
+        self.Q[k] += 1.0/self.N[k] * (r - self.Q[k])
 
 
 
