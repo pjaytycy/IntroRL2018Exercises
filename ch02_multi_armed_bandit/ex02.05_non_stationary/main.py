@@ -1,5 +1,6 @@
 import numpy
 import random
+from matplotlib import pyplot
 
 
 
@@ -21,6 +22,7 @@ class SampleAveragePlayer:
         self.Q = numpy.zeros(testbed.K)
         self.N = numpy.zeros(testbed.K)
         self.score = 0
+        self.Q_hist = [[] for i in range(testbed.K)]
 
 
     def play(self, num):
@@ -57,12 +59,23 @@ class SampleAveragePlayer:
     def update(self, k, r):
         self.N[k] += 1
         self.Q[k] += 1.0/self.N[k] * (r - self.Q[k])
+        for i in range(len(self.Q)):
+            self.Q_hist[i].append(self.Q[i])
+
+
+    def show(self):
+        fig = pyplot.figure()
+        for k in range(len(self.Q)):
+            pyplot.plot(self.Q_hist[k])
+        pyplot.show()
+
 
 
 def main():
     testbed = KArmedBandit(10)
     player = SampleAveragePlayer(testbed, 0.1)
     player.play(1000)
+    player.show()
 
 
 
