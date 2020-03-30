@@ -8,14 +8,28 @@ import matplotlib.ticker as mtick
 
 
 class KArmedBandit:
-    def __init__(self, K):
+    def __init__(self, K, random_walk_sigma = 0.0):
         self.K = K
+        self.random_walk_sigma = random_walk_sigma
         self._q = numpy.random.normal(0.0, 1.0, K)
         self._optimal_k = self._q.argmax()
+        self._q_hist = [[] for i in range(self.K)]
 
 
     def play(self, k):
+        q_adjust = numpy.random.normal(0.0, self.random_walk_sigma, self.K)
+        self._q += q_adjust
+        for i in range(self.K):
+            self._q_hist[i].append(self._q[i])
+        self._optimal_k = self._q.argmax()
         return numpy.random.normal(self._q[k], 1.0)
+
+
+    def show(self):
+        fig = pyplot.figure()
+        for k in range(self.K):
+            pyplot.plot(self._q_hist[k])
+        pyplot.show()
 
 
 
@@ -93,7 +107,7 @@ def main():
     avg_scores = numpy.zeros(num_steps)
     avg_optimal = numpy.zeros(num_steps)
     for b in range(num_runs):
-        testbed = KArmedBandit(num_arms)
+        testbed = KArmedBandit(num_arms, 0.01)
         player = SampleAveragePlayer(testbed, 0.1)
         player.play(num_steps)
         avg_scores += numpy.asarray(player.avg_score_hist)
@@ -101,6 +115,7 @@ def main():
         print("Run {:5d}".format(b), end = '\r')
     print()
     player.show()
+    testbed.show()
 
     avg_scores /= num_runs
     avg_optimal /= num_runs
