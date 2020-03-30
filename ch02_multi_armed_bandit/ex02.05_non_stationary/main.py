@@ -83,10 +83,14 @@ class SampleAveragePlayer:
 
 
     def update(self, k, r):
-        self.N[k] += 1
-        self.Q[k] += 1.0/self.N[k] * (r - self.Q[k])
+        self.update_action_value(k, r)
         for i in range(self.K):
             self.Q_hist[i].append(self.Q[i])
+
+
+    def update_action_value(self, k, r):
+        self.N[k] += 1
+        self.Q[k] += 1.0/self.N[k] * (r - self.Q[k])
 
 
     def show(self):
