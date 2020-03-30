@@ -113,6 +113,16 @@ class SampleAveragePlayer(Player):
 
 
 
+class ConstantStepSizePlayer(Player):
+    def __init__(self, testbed, explore_pct, alpha):
+        super().__init__(testbed, explore_pct)
+        self.alpha = alpha
+
+
+    def update_action_value(self, k, r):
+        self.Q[k] += self.alpha * (r - self.Q[k])
+
+
 def main():
     num_arms = 10
     num_runs = 200
@@ -122,7 +132,8 @@ def main():
     avg_optimal = numpy.zeros(num_steps)
     for b in range(num_runs):
         testbed = KArmedBandit(num_arms, 0.01)
-        player = SampleAveragePlayer(testbed, 0.1)
+        # player = SampleAveragePlayer(testbed, 0.1)
+        player = ConstantStepSizePlayer(testbed, 0.1, 0.1)
         player.play(num_steps)
         avg_scores += numpy.asarray(player.avg_score_hist)
         avg_optimal += numpy.asarray(player.optimal_choice)
