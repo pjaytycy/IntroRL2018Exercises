@@ -30,6 +30,7 @@ class SampleAveragePlayer:
         self.Q_hist = [[] for i in range(self.K)]
         self.avg_score_hist = []
         self.optimal_choice = []
+        self.debug = False
 
 
     def play(self, num):
@@ -39,7 +40,8 @@ class SampleAveragePlayer:
             self.update(k, r)
             self.score += r
             avg_score = self.score / (t + 1)
-            print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], avg_score))
+            if self.debug:
+                print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], avg_score))
             self.avg_score_hist.append(avg_score)
             self.optimal_choice.append((k == self.testbed._optimal_k) * 1.0)
 
@@ -96,6 +98,8 @@ def main():
         player.play(num_steps)
         avg_scores += numpy.asarray(player.avg_score_hist)
         avg_optimal += numpy.asarray(player.optimal_choice)
+        print("Run {:5d}".format(b), end = '\r')
+    print()
     player.show()
 
     avg_scores /= num_runs
