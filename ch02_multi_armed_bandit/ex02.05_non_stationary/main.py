@@ -101,8 +101,8 @@ class SampleAveragePlayer:
 
 def main():
     num_arms = 10
-    num_runs = 2000
-    num_steps = 1000
+    num_runs = 200
+    num_steps = 10000
 
     avg_scores = numpy.zeros(num_steps)
     avg_optimal = numpy.zeros(num_steps)
