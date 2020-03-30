@@ -18,11 +18,12 @@ class KArmedBandit:
 class SampleAveragePlayer:
     def __init__(self, testbed, explore_pct):
         self.testbed = testbed
+        self.K = testbed.K
         self.explore_pct = explore_pct
-        self.Q = numpy.zeros(testbed.K)
-        self.N = numpy.zeros(testbed.K)
+        self.Q = numpy.zeros(self.K)
+        self.N = numpy.zeros(self.K)
         self.score = 0
-        self.Q_hist = [[] for i in range(testbed.K)]
+        self.Q_hist = [[] for i in range(self.K)]
 
 
     def play(self, num):
@@ -35,7 +36,7 @@ class SampleAveragePlayer:
 
 
     def select_action(self):
-        possible_actions = list(range(self.testbed.K))
+        possible_actions = list(range(self.K))
         if self.should_move_greedy():
             possible_actions = self.get_best_actions()
         return self.select_random_action(possible_actions)
@@ -59,13 +60,13 @@ class SampleAveragePlayer:
     def update(self, k, r):
         self.N[k] += 1
         self.Q[k] += 1.0/self.N[k] * (r - self.Q[k])
-        for i in range(len(self.Q)):
+        for i in range(self.K):
             self.Q_hist[i].append(self.Q[i])
 
 
     def show(self):
         fig = pyplot.figure()
-        for k in range(len(self.Q)):
+        for k in range(self.K):
             pyplot.plot(self.Q_hist[k])
         pyplot.show()
 
