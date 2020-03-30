@@ -16,12 +16,18 @@ class KArmedBandit:
         self._q_hist = [[] for i in range(self.K)]
 
 
-    def play(self, k):
-        q_adjust = numpy.random.normal(0.0, self.random_walk_sigma, self.K)
-        self._q += q_adjust
-        for i in range(self.K):
-            self._q_hist[i].append(self._q[i])
-        self._optimal_k = self._q.argmax()
+    def play(self, players, num_steps):
+        for t in range(num_steps):
+            q_adjust = numpy.random.normal(0.0, self.random_walk_sigma, self.K)
+            self._q += q_adjust
+            for i in range(self.K):
+                self._q_hist[i].append(self._q[i])
+            self._optimal_k = self._q.argmax()
+            for player in players:
+                player.play_one(t)
+
+
+    def do_action(self, k):
         return numpy.random.normal(self._q[k], 1.0)
 
 
@@ -46,17 +52,16 @@ class Player:
         self.debug = False
 
 
-    def play(self, num):
-        for t in range(num):
-            k = self.select_action()
-            r = self.testbed.play(k)
-            self.update(k, r)
-            self.score += r
-            avg_score = self.score / (t + 1)
-            if self.debug:
-                print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], avg_score))
-            self.avg_score_hist.append(avg_score)
-            self.optimal_choice.append((k == self.testbed._optimal_k) * 1.0)
+    def play_one(self, t):
+        k = self.select_action()
+        r = self.testbed.do_action(k)
+        self.update(k, r)
+        self.score += r
+        avg_score = self.score / (t + 1)
+        if self.debug:
+            print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], avg_score))
+        self.avg_score_hist.append(avg_score)
+        self.optimal_choice.append((k == self.testbed._optimal_k) * 1.0)
 
 
     def select_action(self):
@@ -128,28 +133,37 @@ def main():
     num_runs = 200
     num_steps = 10000
 
-    avg_scores = numpy.zeros(num_steps)
-    avg_optimal = numpy.zeros(num_steps)
+    avg_scores_1 = numpy.zeros(num_steps)
+    avg_scores_2 = numpy.zeros(num_steps)
+    avg_optimal_1 = numpy.zeros(num_steps)
+    avg_optimal_2 = numpy.zeros(num_steps)
     for b in range(num_runs):
         testbed = KArmedBandit(num_arms, 0.01)
-        # player = SampleAveragePlayer(testbed, 0.1)
-        player = ConstantStepSizePlayer(testbed, 0.1, 0.1)
-        player.play(num_steps)
-        avg_scores += numpy.asarray(player.avg_score_hist)
-        avg_optimal += numpy.asarray(player.optimal_choice)
+        player1 = SampleAveragePlayer(testbed, 0.1)
+        player2 = ConstantStepSizePlayer(testbed, 0.1, 0.1)
+        testbed.play([player1, player2], num_steps)
+        avg_scores_1 += numpy.asarray(player1.avg_score_hist)
+        avg_scores_2 += numpy.asarray(player2.avg_score_hist)
+        avg_optimal_1 += numpy.asarray(player1.optimal_choice)
+        avg_optimal_2 += numpy.asarray(player2.optimal_choice)
         print("Run {:5d}".format(b), end = '\r')
     print()
-    player.show()
     testbed.show()
+    player1.show()
+    player2.show()
 
-    avg_scores /= num_runs
-    avg_optimal /= num_runs
+    avg_scores_1 /= num_runs
+    avg_scores_2 /= num_runs
+    avg_optimal_1 /= num_runs
+    avg_optimal_2 /= num_runs
     ax1 = pyplot.subplot(2, 1, 1)
     pyplot.title("average reward")
-    pyplot.plot(avg_scores)
+    pyplot.plot(avg_scores_1)
+    pyplot.plot(avg_scores_2)
     ax2 = pyplot.subplot(2, 1, 2)
     pyplot.title("% optimal action")
-    pyplot.plot(avg_optimal)
+    pyplot.plot(avg_optimal_1)
+    pyplot.plot(avg_optimal_2)
     ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     pyplot.show()
 
