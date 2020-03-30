@@ -7,7 +7,7 @@ from matplotlib import pyplot
 class KArmedBandit:
     def __init__(self, K):
         self.K = K
-        self._q = numpy.random.normal(0.0, 1.0, 10)
+        self._q = numpy.random.normal(0.0, 1.0, K)
 
 
     def play(self, k):
