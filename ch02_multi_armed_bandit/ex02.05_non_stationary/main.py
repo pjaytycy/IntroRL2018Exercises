@@ -67,7 +67,8 @@ class SampleAveragePlayer:
     def show(self):
         fig = pyplot.figure()
         for k in range(self.K):
-            pyplot.plot(self.Q_hist[k])
+            self.Q_hist[k].append(self.testbed._q[k])
+            pyplot.plot(self.Q_hist[k], marker='o', markevery=[len(self.Q_hist[k])-1])
         pyplot.show()
 
 
