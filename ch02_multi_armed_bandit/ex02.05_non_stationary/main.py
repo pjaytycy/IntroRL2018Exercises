@@ -45,9 +45,8 @@ class Player:
         self.K = testbed.K
         self.explore_pct = explore_pct
         self.Q = numpy.zeros(self.K)
-        self.score = 0
         self.Q_hist = [[] for i in range(self.K)]
-        self.avg_score_hist = []
+        self.r_hist = []
         self.optimal_choice = []
         self.debug = False
 
@@ -56,11 +55,9 @@ class Player:
         k = self.select_action()
         r = self.testbed.do_action(k)
         self.update(k, r)
-        self.score += r
-        avg_score = self.score / (t + 1)
         if self.debug:
-            print("{} : r:{:6.3f} => Q[{}]={:6.3f}, avg score:{:6.3f}".format(k, r, k, self.Q[k], avg_score))
-        self.avg_score_hist.append(avg_score)
+            print("{} : r:{:6.3f} => Q[{}]={:6.3f}".format(k, r, k, self.Q[k]))
+        self.r_hist.append(r)
         self.optimal_choice.append((k == self.testbed._optimal_k) * 1.0)
 
 
@@ -102,7 +99,6 @@ class Player:
         for k in range(self.K):
             self.Q_hist[k].append(self.testbed._q[k])
             pyplot.plot(self.Q_hist[k], marker='o', markevery=[len(self.Q_hist[k])-1])
-        pyplot.plot(self.avg_score_hist)
 
 
 
@@ -139,8 +135,8 @@ def main():
     explore_pct = 0.1
     fixed_alpha = 0.1
 
-    avg_scores_1 = numpy.zeros(num_steps)
-    avg_scores_2 = numpy.zeros(num_steps)
+    avg_rewards_1 = numpy.zeros(num_steps)
+    avg_rewards_2 = numpy.zeros(num_steps)
     avg_optimal_1 = numpy.zeros(num_steps)
     avg_optimal_2 = numpy.zeros(num_steps)
     for b in range(num_runs):
@@ -148,8 +144,8 @@ def main():
         player1 = SampleAveragePlayer(testbed, explore_pct)
         player2 = ConstantStepSizePlayer(testbed, explore_pct, fixed_alpha)
         testbed.play([player1, player2], num_steps)
-        avg_scores_1 += numpy.asarray(player1.avg_score_hist)
-        avg_scores_2 += numpy.asarray(player2.avg_score_hist)
+        avg_rewards_1 += numpy.asarray(player1.r_hist)
+        avg_rewards_2 += numpy.asarray(player2.r_hist)
         avg_optimal_1 += numpy.asarray(player1.optimal_choice)
         avg_optimal_2 += numpy.asarray(player2.optimal_choice)
         print("Run {:5d}".format(b), end = '\r')
@@ -163,14 +159,14 @@ def main():
 
     # show averages over all runs
     pyplot.figure()
-    avg_scores_1 /= num_runs
-    avg_scores_2 /= num_runs
+    avg_rewards_1 /= num_runs
+    avg_rewards_2 /= num_runs
     avg_optimal_1 /= num_runs
     avg_optimal_2 /= num_runs
     ax1 = pyplot.subplot(2, 1, 1)
     pyplot.title("average reward")
-    pyplot.plot(avg_scores_1, label = "sample average")
-    pyplot.plot(avg_scores_2, label = "fixed alpha = {}".format(fixed_alpha))
+    pyplot.plot(avg_rewards_1, label = "sample average")
+    pyplot.plot(avg_rewards_2, label = "fixed alpha = {}".format(fixed_alpha))
     pyplot.legend()
     ax2 = pyplot.subplot(2, 1, 2)
     pyplot.title("% optimal action")
