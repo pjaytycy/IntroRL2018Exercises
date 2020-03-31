@@ -8,10 +8,10 @@ import matplotlib.ticker as mtick
 
 
 class KArmedBandit:
-    def __init__(self, K, random_walk_sigma = 0.0):
+    def __init__(self, K, initial_sigma = 1.0, random_walk_sigma = 0.0):
         self.K = K
         self.random_walk_sigma = random_walk_sigma
-        self._q = numpy.random.normal(0.0, 1.0, K)
+        self._q = numpy.random.normal(0.0, initial_sigma, K)
         self._optimal_k = self._q.argmax()
         self._q_hist = [[] for i in range(self.K)]
 
@@ -133,14 +133,20 @@ def main():
     num_runs = 200
     num_steps = 10000
 
+    sigma_initial = 0.1
+    sigma_random_walk = 0.01
+
+    explore_pct = 0.1
+    fixed_alpha = 0.1
+
     avg_scores_1 = numpy.zeros(num_steps)
     avg_scores_2 = numpy.zeros(num_steps)
     avg_optimal_1 = numpy.zeros(num_steps)
     avg_optimal_2 = numpy.zeros(num_steps)
     for b in range(num_runs):
-        testbed = KArmedBandit(num_arms, 0.01)
-        player1 = SampleAveragePlayer(testbed, 0.1)
-        player2 = ConstantStepSizePlayer(testbed, 0.1, 0.1)
+        testbed = KArmedBandit(num_arms, sigma_initial, sigma_random_walk)
+        player1 = SampleAveragePlayer(testbed, explore_pct)
+        player2 = ConstantStepSizePlayer(testbed, explore_pct, fixed_alpha)
         testbed.play([player1, player2], num_steps)
         avg_scores_1 += numpy.asarray(player1.avg_score_hist)
         avg_scores_2 += numpy.asarray(player2.avg_score_hist)
