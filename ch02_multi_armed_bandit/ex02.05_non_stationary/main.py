@@ -33,9 +33,9 @@ class KArmedBandit:
 
     def show(self):
         fig = pyplot.figure()
+        pyplot.title("evolution of real q values per arm")
         for k in range(self.K):
             pyplot.plot(self._q_hist[k])
-        pyplot.show()
 
 
 
@@ -98,11 +98,11 @@ class Player:
 
     def show(self):
         fig = pyplot.figure()
+        pyplot.title("evolution of Q estimates per arm")
         for k in range(self.K):
             self.Q_hist[k].append(self.testbed._q[k])
             pyplot.plot(self.Q_hist[k], marker='o', markevery=[len(self.Q_hist[k])-1])
         pyplot.plot(self.avg_score_hist)
-        pyplot.show()
 
 
 
@@ -154,22 +154,29 @@ def main():
         avg_optimal_2 += numpy.asarray(player2.optimal_choice)
         print("Run {:5d}".format(b), end = '\r')
     print()
+
+    # show details of last run
     testbed.show()
     player1.show()
     player2.show()
+    pyplot.show()
 
+    # show averages over all runs
+    pyplot.figure()
     avg_scores_1 /= num_runs
     avg_scores_2 /= num_runs
     avg_optimal_1 /= num_runs
     avg_optimal_2 /= num_runs
     ax1 = pyplot.subplot(2, 1, 1)
     pyplot.title("average reward")
-    pyplot.plot(avg_scores_1)
-    pyplot.plot(avg_scores_2)
+    pyplot.plot(avg_scores_1, label = "sample average")
+    pyplot.plot(avg_scores_2, label = "fixed alpha = {}".format(fixed_alpha))
+    pyplot.legend()
     ax2 = pyplot.subplot(2, 1, 2)
     pyplot.title("% optimal action")
-    pyplot.plot(avg_optimal_1)
-    pyplot.plot(avg_optimal_2)
+    pyplot.plot(avg_optimal_1, label = "sample average")
+    pyplot.plot(avg_optimal_2, label = "fixed alpha = {}".format(fixed_alpha))
+    pyplot.legend()
     ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     pyplot.show()
 
