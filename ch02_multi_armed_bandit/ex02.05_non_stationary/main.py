@@ -144,7 +144,7 @@ def main():
     num_runs = 2000
     num_steps = 10000
 
-    sigma_initial = 0.0
+    sigma_initial = 1.0
     sigma_random_walk = 0.01
 
     explore_pct = 0.1
