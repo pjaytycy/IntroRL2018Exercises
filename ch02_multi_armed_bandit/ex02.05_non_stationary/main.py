@@ -135,44 +135,43 @@ def main():
     explore_pct = 0.1
     fixed_alpha = 0.1
 
-    avg_rewards_1 = numpy.zeros(num_steps)
-    avg_rewards_2 = numpy.zeros(num_steps)
-    avg_optimal_1 = numpy.zeros(num_steps)
-    avg_optimal_2 = numpy.zeros(num_steps)
+    player_labels = []
+    player_labels.append("sample average")
+    player_labels.append("fixed alpha = {}".format(fixed_alpha))
+    num_players = len(player_labels)
+
+    avg_rewards = numpy.zeros((num_players, num_steps))
+    avg_optimal = numpy.zeros((num_players, num_steps))
     for b in range(num_runs):
         testbed = KArmedBandit(num_arms, sigma_initial, sigma_random_walk)
         player1 = SampleAveragePlayer(testbed, explore_pct)
         player2 = ConstantStepSizePlayer(testbed, explore_pct, fixed_alpha)
-        testbed.play([player1, player2], num_steps)
-        avg_rewards_1 += numpy.asarray(player1.r_hist)
-        avg_rewards_2 += numpy.asarray(player2.r_hist)
-        avg_optimal_1 += numpy.asarray(player1.optimal_choice)
-        avg_optimal_2 += numpy.asarray(player2.optimal_choice)
+        players = [player1, player2]
+        testbed.play(players, num_steps)
+        for p, player in enumerate(players):
+            avg_rewards[p] += numpy.asarray(player.r_hist)
+            avg_optimal[p] += numpy.asarray(player.optimal_choice)
         print("Run {:5d}".format(b), end = '\r')
     print()
 
     # show details of last run
     testbed.show()
-    player1.show()
-    player2.show()
+    for player in players:
+        player.show()
     pyplot.show()
 
     # show averages over all runs
     pyplot.figure()
-    avg_rewards_1 /= num_runs
-    avg_rewards_2 /= num_runs
-    avg_optimal_1 /= num_runs
-    avg_optimal_2 /= num_runs
+    avg_rewards /= num_runs
+    avg_optimal /= num_runs
     ax1 = pyplot.subplot(2, 1, 1)
     pyplot.title("average reward")
-    pyplot.plot(avg_rewards_1, label = "sample average")
-    pyplot.plot(avg_rewards_2, label = "fixed alpha = {}".format(fixed_alpha))
-    pyplot.legend()
+    pyplot.plot(avg_rewards.T)
+    pyplot.legend(player_labels)
     ax2 = pyplot.subplot(2, 1, 2)
     pyplot.title("% optimal action")
-    pyplot.plot(avg_optimal_1, label = "sample average")
-    pyplot.plot(avg_optimal_2, label = "fixed alpha = {}".format(fixed_alpha))
-    pyplot.legend()
+    pyplot.plot(avg_optimal.T)
+    pyplot.legend(player_labels)
     ax2.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
     pyplot.show()
 
