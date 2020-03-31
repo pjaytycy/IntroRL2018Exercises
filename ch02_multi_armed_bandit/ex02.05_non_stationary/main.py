@@ -124,6 +124,21 @@ class ConstantStepSizePlayer(Player):
         self.Q[k] += self.alpha * (r - self.Q[k])
 
 
+
+class UnbiasedConstantStepSizePlayer(Player):
+    def __init__(self, testbed, explore_pct, alpha):
+        super().__init__(testbed, explore_pct)
+        self.alpha = alpha
+        self.trace_of_one = numpy.zeros(self.K)
+
+
+    def update_action_value(self, k, r):
+        self.trace_of_one[k] += self.alpha * (1 - self.trace_of_one[k])
+        beta = self.alpha / self.trace_of_one[k]
+        self.Q[k] += beta * (r - self.Q[k])
+
+
+
 def main():
     num_arms = 10
     num_runs = 2000
@@ -138,6 +153,7 @@ def main():
     player_labels = []
     player_labels.append("sample average")
     player_labels.append("fixed alpha = {}".format(fixed_alpha))
+    player_labels.append("unbiased fixed alpha = {}".format(fixed_alpha))
     num_players = len(player_labels)
 
     avg_rewards = numpy.zeros((num_players, num_steps))
@@ -146,7 +162,8 @@ def main():
         testbed = KArmedBandit(num_arms, sigma_initial, sigma_random_walk)
         player1 = SampleAveragePlayer(testbed, explore_pct)
         player2 = ConstantStepSizePlayer(testbed, explore_pct, fixed_alpha)
-        players = [player1, player2]
+        player3 = UnbiasedConstantStepSizePlayer(testbed, explore_pct, fixed_alpha)
+        players = [player1, player2, player3]
         testbed.play(players, num_steps)
         for p, player in enumerate(players):
             avg_rewards[p] += numpy.asarray(player.r_hist)
