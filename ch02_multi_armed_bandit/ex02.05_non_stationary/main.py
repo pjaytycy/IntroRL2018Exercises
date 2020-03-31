@@ -130,7 +130,7 @@ class ConstantStepSizePlayer(Player):
 
 def main():
     num_arms = 10
-    num_runs = 200
+    num_runs = 2000
     num_steps = 10000
 
     sigma_initial = 1.0
